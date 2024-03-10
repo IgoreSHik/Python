@@ -1,0 +1,101 @@
+import numpy as np
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+import time
+import pandas as pd
+
+data = load_iris()
+X = data.data
+y = data.target
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+results = pd.DataFrame(columns=['Model', 'Accuracy', 'Time (seconds)', 'Node Count'])
+
+from sklearn.tree import DecisionTreeClassifier
+
+start_time = time.time()
+
+model_dt = DecisionTreeClassifier()
+model_dt.fit(X_train, y_train)
+
+y_pred_dt = model_dt.predict(X_test)
+
+end_time = time.time()
+elapsed_time = end_time - start_time
+
+accuracy_dt = accuracy_score(y_test, y_pred_dt)
+node_count_dt = model_dt.tree_.node_count
+
+results = pd.concat([results, pd.DataFrame({'Model': ['Decision Tree'], 'Accuracy': [accuracy_dt], 'Time (seconds)': [elapsed_time], 'Node Count': [node_count_dt]})], ignore_index=True)
+
+import xgboost as xgb
+
+start_time = time.time()
+
+model_xgb = xgb.XGBClassifier()
+model_xgb.fit(X_train, y_train)
+
+y_pred_xgb = model_xgb.predict(X_test)
+
+end_time = time.time()
+elapsed_time = end_time - start_time
+
+accuracy_xgb = accuracy_score(y_test, y_pred_xgb)
+node_count_xgb = model_xgb.get_booster().get_dump()[0].count('\n')
+
+results = pd.concat([results, pd.DataFrame({'Model': ['XGBoost'], 'Accuracy': [accuracy_xgb], 'Time (seconds)': [elapsed_time], 'Node Count': [node_count_xgb]})], ignore_index=True)
+
+import lightgbm as lgb
+
+start_time = time.time()
+
+model_lgb = lgb.LGBMClassifier()
+model_lgb.fit(X_train, y_train)
+
+y_pred_lgb = model_lgb.predict(X_test)
+
+end_time = time.time()
+elapsed_time = end_time - start_time
+
+accuracy_lgb = accuracy_score(y_test, y_pred_lgb)
+node_count_lgb = model_lgb.booster_.num_trees()
+
+results = pd.concat([results, pd.DataFrame({'Model': ['LightGBM'], 'Accuracy': [accuracy_lgb], 'Time (seconds)': [elapsed_time], 'Node Count': [node_count_lgb]})], ignore_index=True)
+
+from catboost import CatBoostClassifier
+
+start_time = time.time()
+
+model_catboost = CatBoostClassifier()
+model_catboost.fit(X_train, y_train)
+
+y_pred_catboost = model_catboost.predict(X_test)
+
+end_time = time.time()
+elapsed_time = end_time - start_time
+
+accuracy_catboost = accuracy_score(y_test, y_pred_catboost)
+node_count_catboost = model_catboost.tree_count_
+
+results = pd.concat([results, pd.DataFrame({'Model': ['CatBoost'], 'Accuracy': [accuracy_catboost], 'Time (seconds)': [elapsed_time], 'Node Count': [node_count_catboost]})], ignore_index=True)
+
+from sklearn.ensemble import RandomForestClassifier
+
+start_time = time.time()
+
+model_rf = RandomForestClassifier()
+model_rf.fit(X_train, y_train)
+
+y_pred_rf = model_rf.predict(X_test)
+
+end_time = time.time()
+elapsed_time = end_time - start_time
+
+accuracy_rf = accuracy_score(y_test, y_pred_rf)
+node_count_rf = model_rf.estimators_[0].tree_.node_count
+
+results = pd.concat([results, pd.DataFrame({'Model': ['Random Forest'], 'Accuracy': [accuracy_rf], 'Time (seconds)': [elapsed_time], 'Node Count': [node_count_rf]})], ignore_index=True)
+
+print(results)
